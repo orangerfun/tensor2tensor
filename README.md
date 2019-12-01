@@ -1,5 +1,10 @@
 # 使用tensor2tensor机器翻译
-自定义训练数据训练transformer
+自定义训练数据训练transformer,实现中文到英文的翻译<br>
+**环境：**<br>
+tensorflow 1.14<br>
+python 3.6.x<br>
+tensor2tensor
+
 # 用t2t_datagen.py生成训练数据
 ### 自定义一个用户目录(参数`--t2t_usr_dir`的值)
 
@@ -24,6 +29,19 @@
  具体设置参见`train`目录下`zhen_data_gen_fangcheng.sh`<br>
  生成的格式化数据样式如下：<br>
  ![](https://github.com/orangerfun/tensor2tensor/raw/master/tfrecord.png)
+# 调用`t2t_trainer.py`训练数据
+参数设置及含义如下：<br>
+
+    python tensor2tensor/bin/t2t_trainer.py \
+        --data_dir=$DATA_DIR \                 # 存放格式化训练数据的目录
+        --t2t_usr_dir=$USER_DIR \              # 存放问题文件的目录
+        --problem=$PROBLEM \                   # 问题文件
+        --model=$MODEL \                       # 模型
+        --hparams_set=$HPARAMS \               # 超参文件
+        --output_dir=$TRAIN_DIR \              # 训练文件输出目录
+        --worker_gpu=2 \
+        --train_steps=200                      # epoch数量
+ 脚本见`train`目录下`zhen_train_fangcheng.sh`
 
 
 

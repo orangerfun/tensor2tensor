@@ -42,6 +42,37 @@ tensor2tensor
         --worker_gpu=2 \
         --train_steps=200                      # epoch数量
  脚本见`train`目录下`zhen_train_fangcheng.sh`
+ # 使用`t2t-decoder`预测
+ 参数设置如下：<br>
+ ```
+ python tensor2tensor/bin/t2t-decoder \  
+    --t2t_usr_dir=$USER_DIR \
+    --problem=$PROBLEM \
+    --data_dir=$DATA_DIR \
+    --model=$MODEL \
+    --hparams_set=$HPARAMS \
+    --output_dir=$TRAIN_DIR \
+    --decode_from_file=$BASEPATH/temp_dir/test.en.seg \      # 用来测的试源文件
+    --decode_to_file=$BASEPATH/decode_res/result.txt \       # 测试结果保存的文件
+    --checkpoint_path=$TRAIN_DIR/model.ckpt-27000             # 调用已经训练好的模型测试
+```
+# 使用t2t-bleu计算测试bleu值
+```
+ python tensor2tensor/bin/t2t-bleu --translation=$TARGET_FILE --reference=$TRANS_FILE
+```
+# t2t-exporter导出模型
+```
+cd $CODE_DIR
+python ./tensor2tensor/bin/t2t-exporter --t2t_usr_dir=$USR_DIR \
+                    --problem=$PROBLEM \
+                    --data_dir=$DATA_DIR \
+                    --model=$MODEL \
+                    --hparams_set=$HPARAMS \
+                    --output_dir=$OUTPUT_DIR        #导出模型保存路径
+```
+**注意：在低版本tensor2tensor中，上面第二个参数名称是problems=$PROBLEM**
+
+ 
 
 
 

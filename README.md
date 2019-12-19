@@ -5,7 +5,7 @@ tensorflow 1.14<br>
 python 3.6.x<br>
 tensor2tensor
 
-# 2.用t2t_datagen.py生成训练数据
+# 2.自定义数据训练Tensor2Tensor
 ## 2.1 自定义一个用户目录(参数`--t2t_usr_dir`的值)
 
 该目录下主要存放以下文件：<br>

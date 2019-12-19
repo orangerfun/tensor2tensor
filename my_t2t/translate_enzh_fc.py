@@ -15,20 +15,15 @@ from tensor2tensor.utils import registry
 import tensorflow as tf
 
 from collections import defaultdict
-
-# 需要修改的如下三处（标序号处）
-
-# 【1】
+# 可以存放多个语料；形式：[["http:..tar.gz(链接)",["train.en", "train.zh"(压缩文件中抽取的文件)]],[语料2，格式同1]，[语料3]]
 _NC_TRAIN_DATASETS = [[
-    "/home/tmxmall/rd/fangcheng/nmt.data.segment/fangcheng.tar.gz",  # 将平行语料train.en train.zh test.en test.zh打包
-                                                                     # 打包命名方式必须为： xxx.tar.gz
-    ["train.en", "train.zh"]  # 训集练文件
+    "/home/rd/temp_dir/train_test.tar.gz",
+    ["train.en.seg", "train.zh.seg"]
 ]]
 
-# 【2】
 _NC_TEST_DATASETS = [[
-    "/home/tmxmall/rd/fangcheng/nmt.data.segment/fangcheng.tar.gz",  # 同上
-    ("test.en", "test.zh")                                           # 测试集文件
+    "/home/rd/temp_dir/train_test.tar.gz",
+    ("valid.en.seg", "valid.zh.seg")
 ]]
 
 
@@ -44,19 +39,14 @@ def create_dummy_tar(tmp_dir, dummy_file_name):
 def get_filename(dataset):
     return dataset[0][0].split("/")[-1]
 
-# 此处就是自定义的问题，命名规则有讲究，如该文件名字为：translate_ench_fc.py ;则问题类名为： TranslateEnzhFc()
+
 @registry.register_problem
 class TranslateEnzhFc(translate.TranslateProblem):
 
-    # 【3】自定义设定单词表生成大小
+    # 设定单词表生成大小
     @property
     def vocab_size(self):
-        return 32000
-
-    # 使用 bpe 进行分词
-    # @property
-    # def vocab_type(self):
-    #    return text_problems.VocabType.TOKEN
+        return 45000
 
     # 超过单词表之后的词的表示，None 表示用元字符替换
     @property
@@ -66,14 +56,12 @@ class TranslateEnzhFc(translate.TranslateProblem):
 
     @property
     def approx_vocab_size(self):
-        return 32000
+        return 45000
 
-    # 源语料的词汇表文件名
     @property
     def source_vocab_name(self):
         return "vocab.enzh-sub-en.%d" % self.approx_vocab_size
 
-    # 目标语料的词汇表文件名
     @property
     def target_vocab_name(self):
         return "vocab.enzh-sub-zh.%d" % self.approx_vocab_size
@@ -98,6 +86,8 @@ class TranslateEnzhFc(translate.TranslateProblem):
 
         source_datasets = [[item[0], [item[1][0]]] for item in train_dataset]
         target_datasets = [[item[0], [item[1][1]]] for item in train_dataset]
+
+        # 有词汇表直接编码，没有此汇表会自己创建词表；此处构建的是编码器，同时可以创建词表
         source_vocab = generator_utils.get_or_generate_vocab(
             data_dir,
             tmp_dir,
@@ -105,6 +95,7 @@ class TranslateEnzhFc(translate.TranslateProblem):
             self.approx_vocab_size,
             source_datasets,
             file_byte_budget=1e8)
+
         target_vocab = generator_utils.get_or_generate_vocab(
             data_dir,
             tmp_dir,
@@ -112,13 +103,15 @@ class TranslateEnzhFc(translate.TranslateProblem):
             self.approx_vocab_size,
             target_datasets,
             file_byte_budget=1e8)
+
         tag = "train" if train else "dev"
         filename_base = "wmt_enzh_%sk_sub_%s" % (self.approx_vocab_size, tag)
+        # 将所有语料连接存入一个文件中
         data_path = translate.compile_data(tmp_dir, datasets, filename_base)
         return text_problems.text2text_generate_encoded(
-            text_problems.text2text_txt_iterator(data_path + ".lang1",
-                                                 data_path + ".lang2"),
-            source_vocab, target_vocab)
+                                        text_problems.text2text_txt_iterator(data_path + ".lang1", data_path + ".lang2"),
+                                        source_vocab,
+                                        target_vocab)
 
     def feature_encoders(self, data_dir):
         source_vocab_filename = os.path.join(data_dir, self.source_vocab_name)

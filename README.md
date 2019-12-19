@@ -16,7 +16,9 @@ tensor2tensor
                ![](https://github.com/orangerfun/tensor2tensor/raw/master/image/dir.png)
 ## 2.2 自定义问题文件
 自定义problem是涉及数据处理方面，也就是主要和`t2t_datagen.py`相关，下面先介绍`t2t_datagen.py`的流程，主要流程如下图所示：<br>
-![](https://github.com/orangerfun/tensor2tensor/raw/master/image/t2t_datagen.png)
+
+![](https://github.com/orangerfun/tensor2tensor/raw/master/image/t2t.png)
+
 `t2t_datagen.py`中重要的信息就是`generate_data_for_problem[line196]`和`generate_data_for_registered_problem[line198]`,进入后者函数内部发现生成数据的时候主要是`problem.generate_data`函数，也就是Problem 的generate_data中的函数。对应到不同的问题上面有不同的实现，在文本到文本的问题的上面，是像下面这种方式实现的
 ```python3
 class Text2TextProblem(problem.Problem):

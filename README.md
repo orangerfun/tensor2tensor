@@ -12,8 +12,8 @@ tensor2tensor
 
     (1). 自定义问题文件 (myproblem.py)
     (2). 创建 __init__.py 并且在 init.py 中把 problem_name 导入，这样才能够被 t2t-datagen 和 t2t-trainer 识别，并注册到 t2t 里面
-自定义的问题类名应该是驼峰法命名，定义的问题对应根据驼峰规则用横线隔开，例如定义问题文件是：`translate_enzh_sub32k`，对应类名 `TranslateEnzhSub32k`，如下图所示，自定义了用户目录，并在其下自定义问题以及创建__init__.py文件<br>
-               ![](https://github.com/orangerfun/tensor2tensor/raw/master/dir.png)
+如下图所示，自定义了用户目录，并在其下自定义问题以及创建__init__.py文件<br>
+               ![](https://github.com/orangerfun/tensor2tensor/raw/master/image/dir.png)
 ## 2.2 自定义问题文件
 自定义problem是涉及数据处理方面，也就是主要和`t2t_datagen.py`相关，下面先介绍`t2t_datagen.py`的流程，主要流程如下图所示：<br>
 ![](https://github.com/orangerfun/tensor2tensor/raw/master/image/t2t_datagen.png)
@@ -116,17 +116,50 @@ def text2text_txt_iterator(source_txt_path, target_txt_path):
 
 ### 2.2.1 自定义problem--使用tensor2tensor中默认subword工具（使用自己的平行语料）
 完整程序见`my_t2t/translate_enzh_fc.py`
+使用时需要做修改的地方如下：
+* 训练、验证数据路径，必须要有压缩文件，防止下载数据（后期可能会再次修改）
+```python3
+_NC_TRAIN_DATASETS = [[
+    "/home/rd/temp_dir/train_test.tar.gz",     
+    ["train.en.seg", "train.zh.seg"]
+]]
+
+_NC_TEST_DATASETS = [[
+    "/home/rd/temp_dir/train_test.tar.gz",
+    ("valid.en.seg", "valid.zh.seg")
+]]
+```
+* 根据语料设置词汇表大小
+```python3
+    def vocab_size(self):
+        return 45000
+```
+* 其他的一些比如词汇表名称，文件名称啥的也可以修改，具体见程序
 ### 2.2.22 自定义problem--使用BPE进行subword(使用自己的词表，平行语料)
 完整程序见`my_t2t/translate_enzh_bpe.py`
+使用时需要修改的地方如下：
+* 训练、验证数据路径,注意这里只需给出文件名，而且实际文件名后面还有后缀`.en`或`.zh`,平行语料放在temp_dir目录下
+```
+ENZH_BPE_DATASETS = {
+    "TRAIN": "corpus.train",
+    "DEV": "corpus.valid"
+}
+```
+* 指定词汇表大小
+```python3
+    def approx_vocab_size(self):
+        return 45000
+```
+使用时将训练、验证、测试语料、词汇表都放到temp_dir下，注意词汇表文件名称要和程序中一样
 ## 2.3 调用t2t_datagen.py生成格式化数据
 调用参数设置如下：<br>
 
     python tensor2tensor/bin/t2t_datagen.py \
-    --data_dir=$DATABASE/../t2t_datagen/$CATEGORY \   # 自定义目录，用于存放生成的训练数据
+    --data_dir=$DATABASE/t2t_datagen/$CATEGORY \      # 自定义目录，用于存放生成的训练数据
     --tmp_dir=$DATABASE \                             # 平行语料存放的目录
     --problem=translate_enzh_fc                       # 自定义的问题文件名
     --t2t_usr_dir=$CODE_DIR/my_t2t                    # 自定义的用户目录，也就是存放自定义问题的目录
- 具体设置参见`train`目录下`zhen_data_gen_fangcheng.sh`<br>
+ 具体设置参见`script`目录下`enzh_data_gen_org.sh`<br>
  生成的格式化数据样式如下：<br>
  ![](https://github.com/orangerfun/tensor2tensor/raw/master/image/tfrecord.png)
 ## 2.4 调用`t2t_trainer.py`训练数据
@@ -139,9 +172,9 @@ def text2text_txt_iterator(source_txt_path, target_txt_path):
         --model=$MODEL \                       # 模型
         --hparams_set=$HPARAMS \               # 超参文件
         --output_dir=$TRAIN_DIR \              # 训练文件输出目录
-        --worker_gpu=2 \
+        --worker_gpu=4 \
         --train_steps=200                      # epoch数量
- 脚本见`train`目录下`zhen_train_fangcheng.sh`
+ 脚本见`script`目录下`enzh_train_org.sh`
  ## 2.5 使用`t2t-decoder`预测
  参数设置如下：<br>
  ```
@@ -171,9 +204,17 @@ python ./tensor2tensor/bin/t2t-exporter --t2t_usr_dir=$USR_DIR \
                     --output_dir=$OUTPUT_DIR        #导出模型保存路径
 ```
 ## 2.8 部署
-**注意：在低版本tensor2tensor中，上面第二个参数名称是problems=$PROBLEM**
+待更新
+# 3.注意事项
+* 对中文，使用前需要先分词（Hnalp, jieba），在使用BPE前也要分词
+* 自定义的问题类名应该是驼峰法命名，定义的问题对应根据驼峰规则用横线隔开，例如定义问题文件是：`translate_enzh_sub32k`，对应类名 `TranslateEnzhSub32k`
+* BPE的使用见[BPE](https://github.com/orangerfun/BPE)
+* 在低版本tensor2tensor中，上面第二个参数名称是problems=$PROBLEM
 
- 
+# 4. 参考
+* [如何使用tensor2tensor自定义数据并训练模型（很全面）](https://blog.csdn.net/hpulfc/article/details/81172498)
+* [tensor2tensor开源代码GitHub](https://github.com/tensorflow/tensor2tensor)
+
 
 
 

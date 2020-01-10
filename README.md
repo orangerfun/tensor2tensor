@@ -209,7 +209,7 @@ python ./tensor2tensor/bin/t2t-exporter --t2t_usr_dir=$USR_DIR \
 #          --checkpoint_path:将保存的哪个模型导出，不指定该参数，将默认从ouput_dir中获取最新的模型
 # 从上两个参数看来，ouput_dir 很重要， output_dir一般为训练模型时模型保存位置
 ```
-## 2.8 部署
+## 2.8 使用docker部署
 待更新
 # 3.注意事项
 * 对中文，使用前需要先分词（Hnalp, jieba），在使用BPE前也要分词

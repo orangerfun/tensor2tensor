@@ -210,7 +210,18 @@ python ./tensor2tensor/bin/t2t-exporter --t2t_usr_dir=$USR_DIR \
 # 从上两个参数看来，ouput_dir 很重要， output_dir一般为训练模型时模型保存位置
 ```
 ## 2.8 使用docker部署
-待更新
+```bash
+#!/usr/bin/env bash
+nohup docker run --gpus '"device=0"' -p 9502:8501 -p 9002:8500 --name translate_enzh_bpe -v /home/tmx/rd/org/BPE_seg/train_dir/export/Servo:/models/translate_enzh_bpe -e MODEL_NAME=translate_enzh_bpe tensorflow/serving:1.14.0-gpu &
+
+args:
+--gpus: 指定gpu
+-p 端口映射
+--name: 容器名称
+-v 挂载卷
+-e 设置环境变量
+最后一个是镜像
+```
 # 3.注意事项
 * 对中文，使用前需要先分词（Hnalp, jieba），在使用BPE前也要分词
 * 自定义的问题类名应该是驼峰法命名，定义的问题对应根据驼峰规则用横线隔开，例如定义问题文件是：`translate_enzh_sub32k`，对应类名 `TranslateEnzhSub32k`
